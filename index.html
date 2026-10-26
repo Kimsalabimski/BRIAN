@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Open in Obsidian</title>
+<style>
+  :root {
+    --bg: #f6f5f1;
+    --fg: #1f2a24;
+    --muted: #5d6a62;
+    --accent: #2f6b4f;
+    --card: #ffffff;
+    --border: #dcdcd4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #151a17;
+      --fg: #e8ece9;
+      --muted: #9aa69f;
+      --accent: #6fbf95;
+      --card: #1e2521;
+      --border: #303a34;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    color: var(--fg);
+    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding: 16px;
+  }
+  main {
+    width: 100%;
+    max-width: 480px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  h1 { font-size: 1.15rem; margin: 0 0 8px; }
+  p { margin: 0 0 16px; color: var(--muted); }
+  code {
+    display: block;
+    word-break: break-all;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    color: var(--fg);
+    margin-bottom: 16px;
+  }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  a.btn, button {
+    appearance: none;
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font: inherit;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  a.btn { background: var(--accent); color: var(--card); }
+  button { background: transparent; color: var(--accent); }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <div id="ok" class="hidden">
+    <h1>Notitie openen in Obsidian</h1>
+    <p>Obsidian zou nu moeten openen. Gebeurt er niks? Tik op de knop.</p>
+    <code id="path"></code>
+    <div class="row">
+      <a id="open" class="btn" href="#">Open in Obsidian</a>
+      <button id="copy" type="button">Kopieer pad</button>
+    </div>
+    <p style="margin-top:16px;font-size:0.85rem">Werkt het niet? Check of Obsidian op dit apparaat staat en of je vault <strong id="vaultname"></strong> heet.</p>
+  </div>
+  <div id="err" class="hidden">
+    <h1>Geen notitie in deze link</h1>
+    <p>Deze link mist het pad naar een notitie. Gebruik de vorm <strong>?f=map/notitie</strong>.</p>
+  </div>
+</main>
+<script>
+  (function () {
+    var DEFAULT_VAULT = "Protopia BRIAN";
+    var params = new URLSearchParams(window.location.search);
+    var file = (params.get("f") || params.get("file") || "").trim();
+    var vault = (params.get("v") || DEFAULT_VAULT).trim();
+
+    if (!file) {
+      document.getElementById("err").classList.remove("hidden");
+      return;
+    }
+
+    file = file.replace(/^\/+/, "").replace(/\.md$/i, "");
+
+    var target = "obsidian://open?vault=" + encodeURIComponent(vault) +
+                 "&file=" + encodeURIComponent(file);
+
+    document.getElementById("path").textContent = file;
+    document.getElementById("vaultname").textContent = vault;
+    document.getElementById("open").setAttribute("href", target);
+    document.getElementById("ok").classList.remove("hidden");
+    document.title = "Open " + file.split("/").pop();
+
+    document.getElementById("copy").addEventListener("click", function () {
+      var btn = this;
+      try {
+        navigator.clipboard.writeText(file).then(function () {
+          btn.textContent = "Gekopieerd";
+        });
+      } catch (e) {}
+    });
+
+    window.location.replace(target);
+  })();
+</script>
+</body>
+</html>
